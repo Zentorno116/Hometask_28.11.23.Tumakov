@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 
 public enum AccountType
 {
@@ -7,34 +8,44 @@ public enum AccountType
     Deposit
 }
 
+public class BankTransaction
+{
+    public readonly decimal Amount;
+    public readonly DateTime TransactionDate;
+
+    public BankTransaction(decimal amount)
+    {
+        Amount = amount;
+        TransactionDate = DateTime.Now;
+    }
+}
+
 public class BankAccount
 {
     private string accountNumber;
     private decimal balance;
     private AccountType accountType;
+    private Queue transactions;
 
     public BankAccount()
     {
         GenerateAccountNumber();
+        transactions = new Queue();
     }
 
-    public BankAccount(decimal balance)
+    public BankAccount(decimal balance) : this()
     {
-        GenerateAccountNumber();
-        this.balance = balance;
+        Deposit(balance);
     }
 
-    public BankAccount(AccountType accountType)
+    public BankAccount(AccountType accountType) : this()
     {
-        GenerateAccountNumber();
         this.accountType = accountType;
     }
 
-    public BankAccount(decimal balance, AccountType accountType)
+    public BankAccount(decimal balance, AccountType accountType) : this(accountType)
     {
-        GenerateAccountNumber();
-        this.balance = balance;
-        this.accountType = accountType;
+        Deposit(balance);
     }
 
     private void GenerateAccountNumber()
@@ -50,7 +61,6 @@ public class BankAccount
     public decimal Balance
     {
         get { return balance; }
-        set { balance = value; }
     }
 
     public AccountType Type
@@ -58,14 +68,26 @@ public class BankAccount
         get { return accountType; }
         set { accountType = value; }
     }
+
+    public void Deposit(decimal amount)
+    {
+        balance += amount;
+        transactions.Enqueue(new BankTransaction(amount));
+    }
+
+    public void Withdraw(decimal amount)
+    {
+        balance -= amount;
+        transactions.Enqueue(new BankTransaction(-amount));
+    }
 }
 
 class Program
 {
     static void Main()
     {
-        Console.WriteLine("Упражнение 9.1. Банк с конструктором.");
-        BankAccount account = new BankAccount(9112023m, AccountType.Savings);
+        Console.WriteLine("Упражнение 9.2. Банк с BankTransaction. ");
+        BankAccount account = new BankAccount(10112023m, AccountType.Savings);
 
         Console.WriteLine($"Номер счета: {account.AccountNumber}");
         Console.WriteLine($"Баланс: {account.Balance}");
